@@ -1,0 +1,54 @@
+version: 2.1
+
+jobs:
+  PushImage:
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build front-end
+          command: |
+            cd udagram-frontend
+            docker build -t huuhao2205/udagram-frontend .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASS"
+            docker push huuhao2205/udagram-frontend
+      - run:
+          name: Build feed-backend
+          command: |
+            cd udagram-api-feed
+            docker build -t huuhao2205/udagram-api-feed .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASS"
+            docker push huuhao2205/udagram-api-feed
+      - run:
+          name: Build user-backend
+          command: |
+            cd udagram-api-user
+            docker build -t huuhao2205/udagram-api-user .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASS"
+            docker push huuhao2205/udagram-api-user
+      - run:
+          name: Build reverseproxy
+          command: |
+            cd udagram-reverseproxy
+            docker build -t huuhao2205/reverseproxy .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASS"
+            docker push huuhao2205/reverseproxy
+workflows:
+  version: 2
+  deploy_workflow:
+    jobs:
+      - PushImage
